@@ -1,0 +1,49 @@
+﻿@implements IDisposable
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<header class="navbar">
+    <div class="container navbar-inner">
+        <a class="brand" href="">
+            <img src="images/logo.svg" alt="J.P Trading logo" />
+            <span>J.P <b>Trading</b></span>
+        </a>
+
+        <button class="nav-toggle" @onclick="() => open = !open">☰</button>
+
+        <nav class="nav-links @(open ? "open" : "")" @onclick="() => open = false">
+            <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+            <NavLink href="vehicles">Vehicles</NavLink>
+            <NavLink href="currency">Currency</NavLink>
+
+            @if (Auth.IsLoggedIn)
+            {
+                <NavLink href="@DashboardUrl">Dashboard</NavLink>
+                <button class="btn btn-primary" @onclick="Logout">Logout</button>
+            }
+            else
+            {
+                <NavLink href="login">Login</NavLink>
+                <a class="btn btn-primary" href="signup">Sign Up</a>
+            }
+        </nav>
+    </div>
+</header>
+
+@code {
+    private bool open;
+
+    private string DashboardUrl => Auth.CurrentUser?.Role == "Admin" ? "admin" : "buyer";
+
+    protected override void OnInitialized() => Auth.OnChange += Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    private void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("");
+    }
+
+    public void Dispose() => Auth.OnChange -= Refresh;
+}

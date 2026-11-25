@@ -1,7 +1,71 @@
 ﻿@page "/"
+@inject NavigationManager Nav
 
-<PageTitle>Home</PageTitle>
+<PageTitle>J.P Trading | Imported Japanese Cars</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <h1>Buy Japanese used cars with <span>confidence</span></h1>
+            <p>Browse imported vehicles, read translated auction sheets, see prices in your own currency and track your order step by step.</p>
+            <div class="search-box">
+                <input placeholder="Search by make, model or year..." @bind="query" @bind:event="oninput" />
+                <button class="btn btn-primary" @onclick="Search">Search</button>
+            </div>
+        </div>
+        <div class="hero-art">
+            <img src="images/logo.svg" alt="J.P Trading" />
+            <h3 style="color:#fff;margin-top:14px">Japan to your door</h3>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why J.P Trading</h2>
+            <p>Everything you need to import a car safely</p>
+        </div>
+        <div class="grid-3">
+            <div class="card">
+                <div class="feature-icon">📄</div>
+                <h3>Auction Sheet Translation</h3>
+                <p>Japanese auction sheets translated to English so you know the real condition.</p>
+            </div>
+            <div class="card">
+                <div class="feature-icon">💱</div>
+                <h3>Prices in Your Currency</h3>
+                <p>See every price in your own country's currency, with duty rates included.</p>
+            </div>
+            <div class="card">
+                <div class="feature-icon">🚚</div>
+                <h3>Order Tracking</h3>
+                <p>Follow your order from purchase to shipping to delivery, with notifications.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background:#fff">
+    <div class="container">
+        <div class="section-title"><h2>How it works</h2></div>
+        <div class="grid-4">
+            <div><div class="step-num">1</div><h4>Register</h4><p>Create your free buyer account.</p></div>
+            <div><div class="step-num">2</div><h4>Browse</h4><p>Search and filter vehicles.</p></div>
+            <div><div class="step-num">3</div><h4>Order</h4><p>Place your purchase request.</p></div>
+            <div><div class="step-num">4</div><h4>Track</h4><p>Track status until delivery.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <h2>Ready to find your car?</h2>
+    <p>Join J.P Trading today.</p>
+    <a class="btn btn-primary" href="signup">Create Free Account</a>
+</section>
+
+@code {
+    private string query = "";
+
+    private void Search() => Nav.NavigateTo($"vehicles?search={Uri.EscapeDataString(query)}");
+}
