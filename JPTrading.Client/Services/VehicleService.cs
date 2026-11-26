@@ -71,6 +71,27 @@ public class VehicleService
     public List<Vehicle> GetAll() => _vehicles;
 
     public Vehicle? GetById(int id) => _vehicles.FirstOrDefault(v => v.Id == id);
+    public event Action? OnChange;
+
+    public void Add(Vehicle v)
+    {
+        v.Id = _vehicles.Count == 0 ? 1 : _vehicles.Max(x => x.Id) + 1;
+        _vehicles.Add(v);
+        OnChange?.Invoke();
+    }
+
+    public void Update(Vehicle v)
+    {
+        var i = _vehicles.FindIndex(x => x.Id == v.Id);
+        if (i >= 0) _vehicles[i] = v;
+        OnChange?.Invoke();
+    }
+
+    public void Remove(int id)
+    {
+        _vehicles.RemoveAll(x => x.Id == id);
+        OnChange?.Invoke();
+    }
 
     private static Vehicle V(int id, string make, string model, int year, int km, decimal price,
         string fuel, string trans, string body, string color, int cc, string loc, string desc, AuctionSheet sheet)
