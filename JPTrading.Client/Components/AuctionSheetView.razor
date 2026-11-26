@@ -1,0 +1,28 @@
+﻿<div class="card">
+    <h3>Auction Sheet (Translated)</h3>
+    <p class="muted">Auction house: <b>@Sheet.AuctionHouse</b></p>
+
+    <div class="grid-3" style="margin:16px 0">
+        <div class="grade-box"><span>Overall</span><b>@Sheet.OverallGrade</b></div>
+        <div class="grade-box"><span>Exterior</span><b>@Sheet.ExteriorGrade</b></div>
+        <div class="grade-box"><span>Interior</span><b>@Sheet.InteriorGrade</b></div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>Japanese (original)</th><th>English</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var n in Sheet.Notes)
+                {
+                    <tr><td>@n.Japanese</td><td>@n.English</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public AuctionSheet Sheet { get; set; } = default!;
+}
