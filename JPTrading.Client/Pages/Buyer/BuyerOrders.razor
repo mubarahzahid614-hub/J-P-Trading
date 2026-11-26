@@ -1,0 +1,47 @@
+﻿@page "/buyer/orders"
+@layout BuyerLayout
+@inject AuthService Auth
+@inject StoreService StoreSvc
+
+<PageTitle>My Orders | J.P Trading</PageTitle>
+
+<h2>My Orders</h2>
+
+@if (!orders.Any())
+{
+    <div class="alert alert-info">You have no orders yet. <a href="vehicles">Browse vehicles</a></div>
+}
+else
+{
+    <div class="card">
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr><th>Order</th><th>Vehicle</th><th>Total</th><th>Date</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in orders)
+                    {
+                        <tr>
+                            <td>#@o.Id</td>
+                            <td>@o.VehicleTitle</td>
+                            <td>@o.Currency @o.TotalLocal.ToString("N0")</td>
+                            <td>@o.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td><StatusBadge Status="@o.Status" /></td>
+                            <td><a class="btn btn-navy" href="buyer/orders/@o.Id">Track</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Order> orders = new();
+
+    protected override void OnInitialized()
+    {
+        if (Auth.CurrentUser != null) orders = StoreSvc.OrdersFor(Auth.CurrentUser.Email);
+    }
+}
