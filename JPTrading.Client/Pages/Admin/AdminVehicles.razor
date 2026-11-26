@@ -1,0 +1,53 @@
+﻿@page "/admin/vehicles"
+@layout AdminLayout
+@inject VehicleService VehicleSvc
+@inject Microsoft.JSInterop.IJSRuntime JS
+
+<PageTitle>Manage Vehicles | J.P Trading</PageTitle>
+
+<div class="row-between">
+    <h2>Manage Vehicles</h2>
+    <a class="btn btn-primary" href="admin/vehicles/new">+ Add Vehicle</a>
+</div>
+
+<div class="card" style="margin-top:16px">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>ID</th><th>Vehicle</th><th>Price (JPY)</th><th>Grade</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var v in VehicleSvc.GetAll().OrderBy(x => x.Id))
+                {
+                    <tr>
+                        <td>@v.Id</td>
+                        <td>@v.Title</td>
+                        <td>¥@v.PriceJpy.ToString("N0")</td>
+                        <td>@v.Sheet.OverallGrade</td>
+                        <td>
+                            <select class="form-control form-sm" value="@v.Status" @onchange="e => SetStatus(v, e)">
+                                <option value="Available">Available</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Sold">Sold</option>
+                            </select>
+                        </td>
+                        <td class="actions">
+                            <a class="btn btn-navy btn-sm" href="admin/vehicles/edit/@v.Id">Edit</a>
+                            <button class="btn btn-danger btn-sm" @onclick="() => Delete(v)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private void SetStatus(Vehicle v, ChangeEventArgs e) => v.Status = e.Value?.ToString() ?? v.Status;
+
+    private async Task Delete(Vehicle v)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", $"Delete {v.Title}?"))
+            VehicleSvc.Remove(v.Id);
+    }
+}
