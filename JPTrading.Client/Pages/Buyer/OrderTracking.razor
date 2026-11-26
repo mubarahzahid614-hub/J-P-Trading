@@ -1,0 +1,71 @@
+﻿@page "/buyer/orders/{Id:int}"
+@layout BuyerLayout
+@inject AuthService Auth
+@inject StoreService StoreSvc
+
+<PageTitle>Track Order | J.P Trading</PageTitle>
+
+<a href="buyer/orders">← Back to orders</a>
+
+@if (order == null)
+{
+    <div class="alert alert-error" style="margin-top:12px">Order not found.</div>
+}
+else
+{
+    <h2 style="margin-top:10px">Order #@order.Id</h2>
+
+    @if (order.StepIndex < 2)
+    {
+        <div class="alert alert-info">
+            To continue, please pay using our <a href="buyer/bank">bank details</a>. Write <b>Order #@order.Id</b> as the payment reference.
+        </div>
+    }
+
+    <div class="detail-grid">
+        <div class="card">
+            <h3>Tracking</h3>
+            <ul class="timeline">
+                @for (var i = 0; i < Order.Steps.Length; i++)
+                {
+                    var cls = i < order.StepIndex ? "done" : (i == order.StepIndex ? "current" : "");
+                    <li class="@cls">
+                        <span class="dot">@(i <= order.StepIndex ? "✓" : "")</span>
+                        @Order.Steps[i]
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Order details</h3>
+            <table class="table">
+                <tr><td>Vehicle</td><td>@order.VehicleTitle</td></tr>
+                <tr><td>Price (JPY)</td><td>¥@order.PriceJpy.ToString("N0")</td></tr>
+                <tr><td>Country</td><td>@order.Country</td></tr>
+                <tr><td><b>Estimated total</b></td><td><b>@order.Currency @order.TotalLocal.ToString("N0")</b></td></tr>
+                <tr><td>Ordered on</td><td>@order.CreatedAt.ToString("dd MMM yyyy")</td></tr>
+                <tr><td>Status</td><td><StatusBadge Status="@order.Status" /></td></tr>
+            </table>
+
+            @if (order.Status == "Delivered")
+            {
+                <a class="btn btn-primary btn-block" style="margin-top:12px" href="buyer/reviews">Write a review</a>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Order? order;
+
+    protected override void OnParametersSet()
+    {
+        var o = StoreSvc.GetOrder(Id);
+        // a buyer can only see their own orders
+        order = (o != null && Auth.CurrentUser != null &&
+                 o.BuyerEmail.Equals(Auth.CurrentUser.Email, StringComparison.OrdinalIgnoreCase)) ? o : null;
+    }
+}
