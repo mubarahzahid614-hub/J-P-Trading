@@ -1,0 +1,53 @@
+﻿@page "/buyer/notifications"
+@layout BuyerLayout
+@inject AuthService Auth
+@inject StoreService StoreSvc
+
+<PageTitle>Notifications | J.P Trading</PageTitle>
+
+<div class="row-between">
+    <h2>Notifications</h2>
+    <button class="btn btn-outline" @onclick="MarkAll">Mark all as read</button>
+</div>
+
+@if (!items.Any())
+{
+    <div class="alert alert-info" style="margin-top:12px">No notifications yet.</div>
+}
+else
+{
+    @foreach (var n in items)
+    {
+        <div class="card notif @(n.IsRead ? "" : "unread")" @onclick="() => Read(n.Id)">
+            <div class="row-between">
+                <b>@n.Title</b>
+                <span class="small muted">@n.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span>
+            </div>
+            <p style="margin:6px 0 0">@n.Message</p>
+        </div>
+    }
+}
+
+@code {
+    private List<Notification> items = new();
+
+    protected override void OnInitialized() => Load();
+
+    private void Load()
+    {
+        if (Auth.CurrentUser != null) items = StoreSvc.NotificationsFor(Auth.CurrentUser.Email);
+    }
+
+    private void Read(int id)
+    {
+        StoreSvc.MarkRead(id);
+        Load();
+    }
+
+    private void MarkAll()
+    {
+        if (Auth.CurrentUser == null) return;
+        StoreSvc.MarkAllRead(Auth.CurrentUser.Email);
+        Load();
+    }
+}
