@@ -29,6 +29,16 @@ public class CurrencyService
         var found = Countries.FirstOrDefault(c => c.Name == name);
         if (found != null) Selected = found;
     }
+    public void AddCountry(Country c) => Countries.Add(c);
+
+    public void RemoveCountry(Country c)
+    {
+        if (Countries.Count > 1)
+        {
+            Countries.Remove(c);
+            if (Selected == c) Selected = Countries[0];
+        }
+    }
 
     public decimal Convert(decimal jpy, Country? country = null)
         => Math.Round(jpy * (country ?? Selected).RatePerJpy, 0);
