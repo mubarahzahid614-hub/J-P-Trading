@@ -1,0 +1,22 @@
+﻿@page "/buyer/bank"
+@layout BuyerLayout
+@inject StoreService StoreSvc
+
+<PageTitle>Bank Details | J.P Trading</PageTitle>
+
+<h2>Bank Details</h2>
+<p class="muted">Send your payment to this account and write your order number as the reference.</p>
+
+<div class="card" style="max-width:560px">
+    <table class="table">
+        <tr><td>Bank name</td><td><b>@StoreSvc.Bank.BankName</b></td></tr>
+        <tr><td>Account title</td><td><b>@StoreSvc.Bank.AccountTitle</b></td></tr>
+        <tr><td>Account number</td><td><b>@StoreSvc.Bank.AccountNumber</b></td></tr>
+        <tr><td>IBAN</td><td><b>@StoreSvc.Bank.Iban</b></td></tr>
+        <tr><td>SWIFT code</td><td><b>@StoreSvc.Bank.SwiftCode</b></td></tr>
+        <tr><td>Branch</td><td><b>@StoreSvc.Bank.Branch</b></td></tr>
+    </table>
+    <div class="alert alert-info" style="margin-top:14px">
+        After payment, our team will confirm it and update your order status.
+    </div>
+</div>
