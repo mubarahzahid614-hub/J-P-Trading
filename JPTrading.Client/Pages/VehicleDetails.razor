@@ -101,6 +101,15 @@ else
             Nav.NavigateTo("login");
             return;
         }
-        message = "Order requests will be connected in Phase 3 (Buyer dashboard).";
+
+        if (Auth.CurrentUser!.Role != "Buyer")
+        {
+            message = "Only buyer accounts can place orders.";
+            return;
+        }
+
+        var total = Currency.Convert(vehicle!.PriceJpy) + Currency.Duty(vehicle.PriceJpy);
+        var order = StoreSvc.CreateOrder(vehicle, Auth.CurrentUser, Currency.Selected, total);
+        Nav.NavigateTo($"buyer/orders/{order.Id}");
     }
 }
