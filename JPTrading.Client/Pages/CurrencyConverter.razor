@@ -1,0 +1,59 @@
+﻿@page "/currency"
+@inject CurrencyService Currency
+
+<PageTitle>Currency Converter | J.P Trading</PageTitle>
+
+<div class="container section">
+    <h2>Currency Converter</h2>
+    <p class="muted">Convert a Japanese Yen price into your country's currency, with estimated duty.</p>
+
+    <div class="detail-grid">
+        <div class="card">
+            <div class="form-group">
+                <label>Amount in Japanese Yen (¥)</label>
+                <input type="number" class="form-control" @bind="amount" @bind:event="oninput" />
+            </div>
+            <div class="form-group">
+                <label>Country</label>
+                <select class="form-control" value="@Currency.Selected.Name" @onchange="OnCountryChange">
+                    @foreach (var c in Currency.Countries)
+                    {
+                        <option value="@c.Name">@c.Name (@c.Currency)</option>
+                    }
+                </select>
+            </div>
+
+            <table class="table">
+                <tr><td>Converted price</td><td>@Currency.Selected.Currency @Currency.Convert(amount).ToString("N0")</td></tr>
+                <tr><td>Duty (@Currency.Selected.DutyPercent%)</td><td>@Currency.Selected.Currency @Currency.Duty(amount).ToString("N0")</td></tr>
+                <tr><td><b>Estimated total</b></td><td><b>@Currency.Selected.Currency @((Currency.Convert(amount) + Currency.Duty(amount)).ToString("N0"))</b></td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>All rates (sample)</h3>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Country</th><th>Currency</th><th>1 ¥ =</th><th>Duty</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in Currency.Countries)
+                        {
+                            <tr>
+                                <td>@c.Name</td>
+                                <td>@c.Currency</td>
+                                <td>@c.RatePerJpy</td>
+                                <td>@c.DutyPercent%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private decimal amount = 1000000;
+
+    private void OnCountryChange(ChangeEventArgs e) => Currency.Select(e.Value?.ToString() ?? "");
+}
