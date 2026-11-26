@@ -1,0 +1,92 @@
+﻿@page "/buyer/inquiries"
+@layout BuyerLayout
+@inject AuthService Auth
+@inject StoreService StoreSvc
+
+<PageTitle>Inquiries | J.P Trading</PageTitle>
+
+<h2>Inquiries</h2>
+
+<div class="detail-grid">
+    <div class="card">
+        <h3>Send a new inquiry</h3>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-error">@error</div>
+        }
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div class="alert alert-info">@success</div>
+        }
+
+        <div class="form-group">
+            <label>Subject</label>
+            <input class="form-control" @bind="subject" />
+        </div>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea class="form-control" rows="5" @bind="message"></textarea>
+        </div>
+        <button class="btn btn-primary" @onclick="Send">Send inquiry</button>
+    </div>
+
+    <div>
+        @if (!items.Any())
+        {
+            <div class="alert alert-info">No inquiries yet.</div>
+        }
+        @foreach (var i in items)
+        {
+            <div class="card" style="margin-bottom:14px">
+                <div class="row-between">
+                    <b>@i.Subject</b>
+                    <span class="small muted">@i.CreatedAt.ToString("dd MMM yyyy")</span>
+                </div>
+                <p>@i.Message</p>
+                @if (string.IsNullOrEmpty(i.Reply))
+                {
+                    <span class="badge badge-yellow">Waiting for reply</span>
+                }
+                else
+                {
+                    <div class="alert alert-info" style="margin:0"><b>Reply:</b> @i.Reply</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string subject = "";
+    private string message = "";
+    private string error = "";
+    private string success = "";
+    private List<Inquiry> items = new();
+
+    protected override void OnInitialized() => Load();
+
+    private void Load()
+    {
+        if (Auth.CurrentUser != null) items = StoreSvc.InquiriesFor(Auth.CurrentUser.Email);
+    }
+
+    private void Send()
+    {
+        error = "";
+        success = "";
+
+        if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(message))
+        {
+            error = "Please fill in both subject and message.";
+            return;
+        }
+
+        var u = Auth.CurrentUser!;
+        StoreSvc.AddInquiry(u.Email, u.FullName, subject.Trim(), message.Trim());
+        subject = "";
+        message = "";
+        success = "Your inquiry was sent.";
+        Load();
+    }
+}
