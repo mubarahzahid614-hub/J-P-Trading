@@ -1,0 +1,24 @@
+﻿@page "/admin/reviews"
+@layout AdminLayout
+@inject StoreService StoreSvc
+
+<PageTitle>Reviews | J.P Trading</PageTitle>
+
+<h2>Buyer Reviews</h2>
+
+@if (!StoreSvc.Reviews.Any())
+{
+    <div class="alert alert-info" style="margin-top:12px">No reviews yet.</div>
+}
+
+@foreach (var r in StoreSvc.Reviews.OrderByDescending(x => x.CreatedAt))
+{
+    <div class="card" style="margin-top:14px">
+        <div class="row-between">
+            <b>@r.VehicleTitle</b>
+            <span class="small muted">@r.BuyerName • @r.CreatedAt.ToString("dd MMM yyyy")</span>
+        </div>
+        <div class="stars">@(new string('★', r.Rating))@(new string('☆', 5 - r.Rating))</div>
+        <p style="margin:0">@r.Comment</p>
+    </div>
+}
