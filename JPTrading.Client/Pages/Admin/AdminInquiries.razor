@@ -1,0 +1,50 @@
+﻿@page "/admin/inquiries"
+@layout AdminLayout
+@inject StoreService StoreSvc
+
+<PageTitle>Inquiries | J.P Trading</PageTitle>
+
+<h2>Buyer Inquiries</h2>
+
+@if (!StoreSvc.Inquiries.Any())
+{
+    <div class="alert alert-info" style="margin-top:12px">No inquiries yet.</div>
+}
+
+@foreach (var i in StoreSvc.Inquiries.OrderBy(x => string.IsNullOrEmpty(x.Reply) ? 0 : 1).ThenByDescending(x => x.CreatedAt))
+{
+    <div class="card" style="margin-top:14px">
+        <div class="row-between">
+            <b>@i.Subject</b>
+            <span class="small muted">@i.BuyerName • @i.CreatedAt.ToString("dd MMM yyyy")</span>
+        </div>
+        <p>@i.Message</p>
+
+        @if (!string.IsNullOrEmpty(i.Reply))
+        {
+            <div class="alert alert-info" style="margin:0"><b>Your reply:</b> @i.Reply</div>
+        }
+        else
+        {
+            <textarea class="form-control" rows="3" placeholder="Write a reply..."
+                      value="@GetDraft(i.Id)" @oninput="e => SetDraft(i.Id, e.Value?.ToString())"></textarea>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px" @onclick="() => Send(i.Id)">Send reply</button>
+        }
+    </div>
+}
+
+@code {
+    private readonly Dictionary<int, string> drafts = new();
+
+    private string GetDraft(int id) => drafts.TryGetValue(id, out var d) ? d : "";
+
+    private void SetDraft(int id, string? text) => drafts[id] = text ?? "";
+
+    private void Send(int id)
+    {
+        var text = GetDraft(id).Trim();
+        if (text == "") return;
+        StoreSvc.ReplyToInquiry(id, text);
+        drafts.Remove(id);
+    }
+}
