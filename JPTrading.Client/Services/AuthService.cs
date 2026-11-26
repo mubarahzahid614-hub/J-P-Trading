@@ -42,5 +42,14 @@ public class AuthService
     {
         CurrentUser = null;
         OnChange?.Invoke();
+           
+}
+    public List<AppUser> Buyers =>
+       _users.Where(u => u.User.Role == "Buyer").Select(u => u.User).ToList();
+
+    public void RemoveBuyer(string email)
+    {
+        _users.RemoveAll(u => u.User.Role == "Buyer" &&
+                              u.User.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
     }
 }
