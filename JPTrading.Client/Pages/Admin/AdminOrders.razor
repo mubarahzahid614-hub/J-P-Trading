@@ -1,0 +1,70 @@
+﻿@page "/admin/orders"
+@layout AdminLayout
+@inject StoreService StoreSvc
+
+<PageTitle>Orders | J.P Trading</PageTitle>
+
+<div class="row-between">
+    <h2>Orders</h2>
+    <select class="form-control form-sm" style="width:220px" @bind="filter">
+        <option value="">All statuses</option>
+        @foreach (var s in Order.Steps)
+        {
+            <option value="@s">@s</option>
+        }
+    </select>
+</div>
+
+@if (!Filtered.Any())
+{
+    <div class="alert alert-info" style="margin-top:12px">No orders found.</div>
+}
+else
+{
+    <div class="card" style="margin-top:16px">
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr><th>Order</th><th>Buyer</th><th>Vehicle</th><th>Total</th><th>Date</th><th>Update status</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Filtered)
+                    {
+                        <tr>
+                            <td>#@o.Id</td>
+                            <td>@o.BuyerName<br /><span class="small muted">@o.BuyerEmail</span></td>
+                            <td>@o.VehicleTitle</td>
+                            <td>@o.Currency @o.TotalLocal.ToString("N0")</td>
+                            <td>@o.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <select class="form-control form-sm" value="@o.Status" @onchange="e => Change(o, e)">
+                                    @foreach (var s in Order.Steps)
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <p class="muted small" style="margin-top:10px">When you change a status, the buyer gets a notification automatically.</p>
+}
+
+@code {
+    private string filter = "";
+
+    private IEnumerable<Order> Filtered =>
+        StoreSvc.Orders
+            .Where(o => filter == "" || o.Status == filter)
+            .OrderByDescending(o => o.CreatedAt);
+
+    private void Change(Order o, ChangeEventArgs e)
+    {
+        var status = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(status) && status != o.Status)
+            StoreSvc.SetStatus(o.Id, status);
+    }
+}
