@@ -1,0 +1,61 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthService Auth
+@inject StoreService StoreSvc
+@inject NavigationManager Nav
+
+<NavBar />
+
+@if (Auth.IsLoggedIn && Auth.CurrentUser!.Role == "Buyer")
+{
+    <div class="dash">
+        <aside class="dash-side">
+            <div class="dash-user">
+                <div class="avatar">@Auth.CurrentUser.FullName.Substring(0, 1).ToUpper()</div>
+                <div>
+                    <b>@Auth.CurrentUser.FullName</b><br />
+                    <span class="small muted">@Auth.CurrentUser.Country</span>
+                </div>
+            </div>
+
+            <NavLink href="buyer" Match="NavLinkMatch.All">📊 Dashboard</NavLink>
+            <NavLink href="buyer/orders">📦 My Orders</NavLink>
+            <NavLink href="buyer/notifications">
+                <span>🔔 Notifications</span>
+                @if (unread > 0)
+                {
+                    <span class="count-pill">@unread</span>
+                }
+            </NavLink>
+            <NavLink href="buyer/bank">🏦 Bank Details</NavLink>
+            <NavLink href="buyer/inquiries">💬 Inquiries</NavLink>
+            <NavLink href="buyer/reviews">⭐ Reviews</NavLink>
+            <NavLink href="vehicles">🚗 Browse Vehicles</NavLink>
+        </aside>
+
+        <section class="dash-main">
+            @Body
+        </section>
+    </div>
+}
+
+@code {
+    private int unread => Auth.CurrentUser == null ? 0 : StoreSvc.UnreadCount(Auth.CurrentUser.Email);
+
+    protected override void OnInitialized()
+    {
+        Auth.OnChange += Refresh;
+        StoreSvc.OnChange += Refresh;
+
+        if (!Auth.IsLoggedIn || Auth.CurrentUser!.Role != "Buyer")
+            Nav.NavigateTo("login");
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Auth.OnChange -= Refresh;
+        StoreSvc.OnChange -= Refresh;
+    }
+}
