@@ -19,8 +19,33 @@ public class Vehicle
     public AuctionSheet Sheet { get; set; } = new();
 
     public string Title => $"{Year} {Make} {Model}";
+    public Vehicle Clone() => new()
+    {
+        Id = Id,
+        Make = Make,
+        Model = Model,
+        Year = Year,
+        Mileage = Mileage,
+        PriceJpy = PriceJpy,
+        FuelType = FuelType,
+        Transmission = Transmission,
+        BodyType = BodyType,
+        Color = Color,
+        EngineCc = EngineCc,
+        Location = Location,
+        Status = Status,
+        Description = Description,
+        Sheet = new AuctionSheet
+        {
+            AuctionHouse = Sheet.AuctionHouse,
+            OverallGrade = Sheet.OverallGrade,
+            ExteriorGrade = Sheet.ExteriorGrade,
+            InteriorGrade = Sheet.InteriorGrade,
+            Notes = Sheet.Notes.Select(n => new SheetNote { Japanese = n.Japanese, English = n.English }).ToList()
+        }
+    };
 }
-
+   
 public class AuctionSheet
 {
     public string AuctionHouse { get; set; } = "";
