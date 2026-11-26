@@ -1,0 +1,20 @@
+﻿@inject CurrencyService Currency
+
+<div class="card vcard">
+    <div class="vcard-img">
+        <span class="badge @(Vehicle.Status == "Available" ? "badge-green" : "badge-gray")">@Vehicle.Status</span>
+        <span class="vcard-emoji">🚗</span>
+    </div>
+    <div class="vcard-body">
+        <h3>@Vehicle.Title</h3>
+        <p class="muted">@Vehicle.Mileage.ToString("N0") km • @Vehicle.FuelType • @Vehicle.Transmission</p>
+        <p class="muted">Auction grade: <b>@Vehicle.Sheet.OverallGrade</b> • @Vehicle.Location</p>
+        <div class="price">@Currency.Format(Vehicle.PriceJpy)</div>
+        <div class="muted small">¥@Vehicle.PriceJpy.ToString("N0")</div>
+        <a class="btn btn-navy btn-block" style="margin-top:12px" href="vehicles/@Vehicle.Id">View Details</a>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Vehicle Vehicle { get; set; } = default!;
+}
