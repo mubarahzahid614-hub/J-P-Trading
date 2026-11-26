@@ -1,0 +1,114 @@
+﻿@page "/vehicles"
+@inject VehicleService VehicleSvc
+@inject CurrencyService Currency
+
+<PageTitle>Vehicles | J.P Trading</PageTitle>
+
+<div class="container section">
+    <h2>Browse Vehicles</h2>
+
+    <div class="card filters">
+        <input class="form-control" placeholder="Search make, model, year..." @bind="searchText" @bind:event="oninput" />
+
+        <select class="form-control" @bind="make">
+            <option value="">All makes</option>
+            @foreach (var m in makes)
+            {
+                <option value="@m">@m</option>
+            }
+        </select>
+
+        <select class="form-control" @bind="bodyType">
+            <option value="">All body types</option>
+            @foreach (var b in bodyTypes)
+            {
+                <option value="@b">@b</option>
+            }
+        </select>
+
+        <select class="form-control" @bind="maxPrice">
+            <option value="0">Any price</option>
+            <option value="1000000">Up to ¥1,000,000</option>
+            <option value="2000000">Up to ¥2,000,000</option>
+            <option value="3000000">Up to ¥3,000,000</option>
+        </select>
+
+        <select class="form-control" @bind="sort">
+            <option value="new">Newest first</option>
+            <option value="low">Price: low to high</option>
+            <option value="high">Price: high to low</option>
+        </select>
+
+        <select class="form-control" value="@Currency.Selected.Name" @onchange="OnCountryChange">
+            @foreach (var c in Currency.Countries)
+            {
+                <option value="@c.Name">Prices in @c.Currency (@c.Name)</option>
+            }
+        </select>
+    </div>
+
+    <p class="muted">@Filtered.Count() vehicle(s) found</p>
+
+    @if (!Filtered.Any())
+    {
+        <div class="alert alert-info">No vehicles match your search.</div>
+    }
+    else
+    {
+        <div class="grid-3">
+            @foreach (var v in Filtered)
+            {
+                <VehicleCard Vehicle="v" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? Search { get; set; }
+
+    private List<Vehicle> all = new();
+    private List<string> makes = new();
+    private List<string> bodyTypes = new();
+
+    private string searchText = "";
+    private string make = "";
+    private string bodyType = "";
+    private int maxPrice = 0;
+    private string sort = "new";
+
+    protected override void OnInitialized()
+    {
+        all = VehicleSvc.GetAll();
+        makes = all.Select(v => v.Make).Distinct().OrderBy(x => x).ToList();
+        bodyTypes = all.Select(v => v.BodyType).Distinct().OrderBy(x => x).ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(Search)) searchText = Search;
+    }
+
+    private void OnCountryChange(ChangeEventArgs e) => Currency.Select(e.Value?.ToString() ?? "");
+
+    private IEnumerable<Vehicle> Filtered
+    {
+        get
+        {
+            var q = all.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+                q = q.Where(v => v.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            if (make != "") q = q.Where(v => v.Make == make);
+            if (bodyType != "") q = q.Where(v => v.BodyType == bodyType);
+            if (maxPrice > 0) q = q.Where(v => v.PriceJpy <= maxPrice);
+
+            return sort switch
+            {
+                "low" => q.OrderBy(v => v.PriceJpy),
+                "high" => q.OrderByDescending(v => v.PriceJpy),
+                _ => q.OrderByDescending(v => v.Year)
+            };
+        }
+    }
+}
