@@ -1,0 +1,12 @@
+﻿<span class="badge @CssClass">@Status</span>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = "";
+
+    private string CssClass => Status switch
+    {
+        "Requested" => "badge-yellow",
+        "Delivered" => "badge-green",
+        _ => "badge-blue"
+    };
+}
