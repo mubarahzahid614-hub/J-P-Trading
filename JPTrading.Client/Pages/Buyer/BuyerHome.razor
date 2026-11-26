@@ -1,0 +1,61 @@
+﻿@page "/buyer"
+@layout BuyerLayout
+@inject AuthService Auth
+@inject StoreService StoreSvc
+
+<PageTitle>Dashboard | J.P Trading</PageTitle>
+
+@if (user != null)
+{
+    <h2>Welcome, @user.FullName 👋</h2>
+    <p class="muted">Here is a summary of your account.</p>
+
+    <div class="grid-4">
+        <div class="card stat"><b>@orders.Count</b><span>Total orders</span></div>
+        <div class="card stat"><b>@orders.Count(o => o.Status != "Delivered")</b><span>Active orders</span></div>
+        <div class="card stat"><b>@StoreSvc.UnreadCount(user.Email)</b><span>Unread notifications</span></div>
+        <div class="card stat"><b>@StoreSvc.InquiriesFor(user.Email).Count</b><span>Inquiries</span></div>
+    </div>
+
+    <div class="card" style="margin-top:24px">
+        <div class="row-between">
+            <h3>Recent orders</h3>
+            <a href="buyer/orders">View all</a>
+        </div>
+
+        @if (!orders.Any())
+        {
+            <p class="muted">No orders yet. <a href="vehicles">Browse vehicles</a> to place your first order.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Order</th><th>Vehicle</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var o in orders.Take(5))
+                        {
+                            <tr>
+                                <td>#@o.Id</td>
+                                <td>@o.VehicleTitle</td>
+                                <td><StatusBadge Status="@o.Status" /></td>
+                                <td><a href="buyer/orders/@o.Id">Track</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private AppUser? user;
+    private List<Order> orders = new();
+
+    protected override void OnInitialized()
+    {
+        user = Auth.CurrentUser;
+        if (user != null) orders = StoreSvc.OrdersFor(user.Email);
+    }
+}
