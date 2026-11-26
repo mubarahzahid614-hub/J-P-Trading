@@ -1,0 +1,70 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthService Auth
+@inject StoreService StoreSvc
+@inject NavigationManager Nav
+
+<NavBar />
+
+@if (Auth.IsLoggedIn && Auth.CurrentUser!.Role == "Admin")
+{
+    <div class="dash">
+        <aside class="dash-side">
+            <div class="dash-user">
+                <div class="avatar">A</div>
+                <div>
+                    <b>Administrator</b><br />
+                    <span class="small muted">J.P Trading</span>
+                </div>
+            </div>
+
+            <NavLink href="admin" Match="NavLinkMatch.All">📊 Dashboard</NavLink>
+            <NavLink href="admin/vehicles">🚗 Vehicles</NavLink>
+            <NavLink href="admin/orders">
+                <span>📦 Orders</span>
+                @if (newRequests > 0)
+                {
+                    <span class="count-pill">@newRequests</span>
+                }
+            </NavLink>
+            <NavLink href="admin/users">👥 Users</NavLink>
+            <NavLink href="admin/inquiries">
+                <span>💬 Inquiries</span>
+                @if (openInquiries > 0)
+                {
+                    <span class="count-pill">@openInquiries</span>
+                }
+            </NavLink>
+            <NavLink href="admin/notifications">🔔 Send Notification</NavLink>
+            <NavLink href="admin/reviews">⭐ Reviews</NavLink>
+            <NavLink href="admin/bank">🏦 Bank Details</NavLink>
+            <NavLink href="admin/rates">💱 Currency Rates</NavLink>
+        </aside>
+
+        <section class="dash-main">
+            @Body
+        </section>
+    </div>
+}
+
+@code {
+    private int newRequests => StoreSvc.Orders.Count(o => o.Status == "Requested");
+    private int openInquiries => StoreSvc.Inquiries.Count(i => string.IsNullOrEmpty(i.Reply));
+
+    protected override void OnInitialized()
+    {
+        Auth.OnChange += Refresh;
+        StoreSvc.OnChange += Refresh;
+
+        if (!Auth.IsLoggedIn || Auth.CurrentUser!.Role != "Admin")
+            Nav.NavigateTo("login");
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Auth.OnChange -= Refresh;
+        StoreSvc.OnChange -= Refresh;
+    }
+}
