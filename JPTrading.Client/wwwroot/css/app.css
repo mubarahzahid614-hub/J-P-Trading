@@ -828,3 +828,52 @@ h1, h2, h3, h4 {
         padding: 16px;
     }
 }
+/* Admin */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 16px;
+    margin-top: 12px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+
+.form-sm {
+    padding: 6px 8px;
+    font-size: 14px;
+    min-width: 110px;
+}
+
+.actions {
+    white-space: nowrap;
+}
+
+    .actions .btn {
+        margin-right: 6px;
+    }
+
+.note-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+@media (max-width: 800px) {
+    .form-grid, .note-row {
+        grid-template-columns: 1fr;
+    }
+}
