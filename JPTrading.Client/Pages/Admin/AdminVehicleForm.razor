@@ -1,0 +1,142 @@
+﻿@page "/admin/vehicles/new"
+@page "/admin/vehicles/edit/{Id:int}"
+@layout AdminLayout
+@inject VehicleService VehicleSvc
+@inject NavigationManager Nav
+
+<PageTitle>@(isNew ? "Add" : "Edit") Vehicle | J.P Trading</PageTitle>
+
+<a href="admin/vehicles">← Back to vehicles</a>
+<h2 style="margin-top:10px">@(isNew ? "Add new vehicle" : "Edit vehicle")</h2>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-error">@error</div>
+}
+
+<div class="card">
+    <h3>Vehicle details</h3>
+    <div class="form-grid">
+        <div class="form-group"><label>Make</label><input class="form-control" @bind="vehicle.Make" /></div>
+        <div class="form-group"><label>Model</label><input class="form-control" @bind="vehicle.Model" /></div>
+        <div class="form-group"><label>Year</label><input type="number" class="form-control" @bind="vehicle.Year" /></div>
+        <div class="form-group"><label>Mileage (km)</label><input type="number" class="form-control" @bind="vehicle.Mileage" /></div>
+        <div class="form-group"><label>Price (JPY)</label><input type="number" class="form-control" @bind="vehicle.PriceJpy" /></div>
+        <div class="form-group"><label>Engine (cc)</label><input type="number" class="form-control" @bind="vehicle.EngineCc" /></div>
+        <div class="form-group">
+            <label>Fuel type</label>
+            <select class="form-control" @bind="vehicle.FuelType">
+                <option>Petrol</option>
+                <option>Diesel</option>
+                <option>Hybrid</option>
+                <option>Electric</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Transmission</label>
+            <select class="form-control" @bind="vehicle.Transmission">
+                <option>Automatic</option>
+                <option>Manual</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Body type</label>
+            <select class="form-control" @bind="vehicle.BodyType">
+                <option>Hatchback</option>
+                <option>Sedan</option>
+                <option>SUV</option>
+                <option>Van</option>
+                <option>Kei Car</option>
+                <option>Truck</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Color</label><input class="form-control" @bind="vehicle.Color" /></div>
+        <div class="form-group"><label>Location in Japan</label><input class="form-control" @bind="vehicle.Location" /></div>
+        <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" @bind="vehicle.Status">
+                <option>Available</option>
+                <option>Reserved</option>
+                <option>Sold</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" rows="3" @bind="vehicle.Description"></textarea>
+    </div>
+</div>
+
+<div class="card" style="margin-top:20px">
+    <h3>Auction sheet</h3>
+    <div class="form-grid">
+        <div class="form-group"><label>Auction house</label><input class="form-control" @bind="vehicle.Sheet.AuctionHouse" /></div>
+        <div class="form-group"><label>Overall grade</label><input class="form-control" @bind="vehicle.Sheet.OverallGrade" /></div>
+        <div class="form-group"><label>Exterior grade</label><input class="form-control" @bind="vehicle.Sheet.ExteriorGrade" /></div>
+        <div class="form-group"><label>Interior grade</label><input class="form-control" @bind="vehicle.Sheet.InteriorGrade" /></div>
+    </div>
+
+    <h4>Translation notes</h4>
+    @foreach (var n in vehicle.Sheet.Notes)
+    {
+        <div class="note-row">
+            <input class="form-control" placeholder="Japanese text" @bind="n.Japanese" />
+            <input class="form-control" placeholder="English translation" @bind="n.English" />
+            <button class="btn btn-danger btn-sm" @onclick="() => vehicle.Sheet.Notes.Remove(n)">✕</button>
+        </div>
+    }
+    <button class="btn btn-outline btn-sm" @onclick="AddNote">+ Add note</button>
+</div>
+
+<div style="margin-top:20px; display:flex; gap:12px">
+    <button class="btn btn-primary" @onclick="Save">Save vehicle</button>
+    <a class="btn btn-outline" href="admin/vehicles">Cancel</a>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Vehicle vehicle = new();
+    private string error = "";
+    private bool isNew => Id == 0;
+
+    protected override void OnParametersSet()
+    {
+        if (Id == 0)
+        {
+            vehicle = new Vehicle
+            {
+                Year = 2020,
+                FuelType = "Petrol",
+                Transmission = "Automatic",
+                BodyType = "Hatchback",
+                Status = "Available",
+                Sheet = new AuctionSheet { OverallGrade = "4", ExteriorGrade = "B", InteriorGrade = "B" }
+            };
+            return;
+        }
+
+        var found = VehicleSvc.GetById(Id);
+        if (found == null) Nav.NavigateTo("admin/vehicles");
+        else vehicle = found.Clone();
+    }
+
+    private void AddNote() => vehicle.Sheet.Notes.Add(new SheetNote());
+
+    private void Save()
+    {
+        error = "";
+        if (string.IsNullOrWhiteSpace(vehicle.Make) || string.IsNullOrWhiteSpace(vehicle.Model) || vehicle.PriceJpy <= 0)
+        {
+            error = "Make, model and a price greater than 0 are required.";
+            return;
+        }
+
+        vehicle.Sheet.Notes.RemoveAll(n => string.IsNullOrWhiteSpace(n.Japanese) && string.IsNullOrWhiteSpace(n.English));
+
+        if (isNew) VehicleSvc.Add(vehicle);
+        else VehicleSvc.Update(vehicle);
+
+        Nav.NavigateTo("admin/vehicles");
+    }
+}
