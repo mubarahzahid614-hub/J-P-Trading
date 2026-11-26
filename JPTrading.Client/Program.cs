@@ -15,6 +15,7 @@ namespace JPTrading.Client
             builder.Services.AddScoped<JPTrading.Client.Services.AuthService>();
             builder.Services.AddScoped<JPTrading.Client.Services.VehicleService>();
             builder.Services.AddScoped<JPTrading.Client.Services.CurrencyService>();
+            builder.Services.AddScoped<JPTrading.Client.Services.StoreService>();
 
             await builder.Build().RunAsync();
         }
