@@ -1,0 +1,105 @@
+﻿@page "/vehicles/{Id:int}"
+@inject VehicleService VehicleSvc
+@inject CurrencyService Currency
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+@if (vehicle == null)
+{
+    <div class="container section">
+        <div class="alert alert-error">Vehicle not found.</div>
+        <a class="btn btn-navy" href="vehicles">Back to vehicles</a>
+    </div>
+}
+else
+{
+    <PageTitle>@vehicle.Title | J.P Trading</PageTitle>
+
+    <div class="container section">
+        <a href="vehicles">← Back to vehicles</a>
+        <h2 style="margin-top:10px">@vehicle.Title</h2>
+
+        <div class="detail-grid">
+            <div>
+                <div class="detail-img"><span>🚗</span></div>
+
+                <div class="card" style="margin-top:20px">
+                    <h3>Specifications</h3>
+                    <div class="spec-grid">
+                        <div><span>Make</span><b>@vehicle.Make</b></div>
+                        <div><span>Model</span><b>@vehicle.Model</b></div>
+                        <div><span>Year</span><b>@vehicle.Year</b></div>
+                        <div><span>Mileage</span><b>@vehicle.Mileage.ToString("N0") km</b></div>
+                        <div><span>Fuel</span><b>@vehicle.FuelType</b></div>
+                        <div><span>Transmission</span><b>@vehicle.Transmission</b></div>
+                        <div><span>Body</span><b>@vehicle.BodyType</b></div>
+                        <div><span>Color</span><b>@vehicle.Color</b></div>
+                        <div><span>Engine</span><b>@vehicle.EngineCc cc</b></div>
+                        <div><span>Location</span><b>@vehicle.Location, Japan</b></div>
+                    </div>
+                    <p style="margin-top:14px">@vehicle.Description</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <span class="badge @(vehicle.Status == "Available" ? "badge-green" : "badge-gray")">@vehicle.Status</span>
+                    <div class="price big">¥@vehicle.PriceJpy.ToString("N0")</div>
+
+                    <div class="form-group" style="margin-top:14px">
+                        <label>Show price for</label>
+                        <select class="form-control" value="@Currency.Selected.Name" @onchange="OnCountryChange">
+                            @foreach (var c in Currency.Countries)
+                            {
+                                <option value="@c.Name">@c.Name (@c.Currency)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <table class="table">
+                        <tr><td>Price</td><td>@Currency.Format(vehicle.PriceJpy)</td></tr>
+                        <tr><td>Duty (@Currency.Selected.DutyPercent%)</td><td>@Currency.Selected.Currency @Currency.Duty(vehicle.PriceJpy).ToString("N0")</td></tr>
+                        <tr><td><b>Estimated total</b></td><td><b>@Currency.Selected.Currency @((Currency.Convert(vehicle.PriceJpy) + Currency.Duty(vehicle.PriceJpy)).ToString("N0"))</b></td></tr>
+                    </table>
+                    <p class="muted small">Estimate only. Shipping and local fees are not included.</p>
+
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                        <div class="alert alert-info">@message</div>
+                    }
+
+                    <button class="btn btn-primary btn-block" @onclick="Buy" disabled="@(vehicle.Status != "Available")">Request to Buy</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:24px">
+            <AuctionSheetView Sheet="vehicle.Sheet" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Vehicle? vehicle;
+    private string message = "";
+
+    protected override void OnParametersSet()
+    {
+        vehicle = VehicleSvc.GetById(Id);
+        message = "";
+    }
+
+    private void OnCountryChange(ChangeEventArgs e) => Currency.Select(e.Value?.ToString() ?? "");
+
+    private void Buy()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Nav.NavigateTo("login");
+            return;
+        }
+        message = "Order requests will be connected in Phase 3 (Buyer dashboard).";
+    }
+}
