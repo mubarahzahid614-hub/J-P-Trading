@@ -1,0 +1,49 @@
+﻿@page "/admin/bank"
+@layout AdminLayout
+@inject StoreService StoreSvc
+
+<PageTitle>Bank Details | J.P Trading</PageTitle>
+
+<h2>Bank Details</h2>
+<p class="muted">Buyers see these details on their dashboard when they need to pay.</p>
+
+<div class="card" style="max-width:600px">
+    @if (saved)
+    {
+        <div class="alert alert-info">Bank details saved.</div>
+    }
+
+    <div class="form-group"><label>Bank name</label><input class="form-control" @bind="bank.BankName" /></div>
+    <div class="form-group"><label>Account title</label><input class="form-control" @bind="bank.AccountTitle" /></div>
+    <div class="form-group"><label>Account number</label><input class="form-control" @bind="bank.AccountNumber" /></div>
+    <div class="form-group"><label>IBAN</label><input class="form-control" @bind="bank.Iban" /></div>
+    <div class="form-group"><label>SWIFT code</label><input class="form-control" @bind="bank.SwiftCode" /></div>
+    <div class="form-group"><label>Branch</label><input class="form-control" @bind="bank.Branch" /></div>
+
+    <button class="btn btn-primary" @onclick="Save">Save</button>
+</div>
+
+@code {
+    private BankInfo bank = new();
+    private bool saved;
+
+    protected override void OnInitialized()
+    {
+        var b = StoreSvc.Bank;
+        bank = new BankInfo
+        {
+            BankName = b.BankName,
+            AccountTitle = b.AccountTitle,
+            AccountNumber = b.AccountNumber,
+            Iban = b.Iban,
+            SwiftCode = b.SwiftCode,
+            Branch = b.Branch
+        };
+    }
+
+    private void Save()
+    {
+        StoreSvc.Bank = bank;
+        saved = true;
+    }
+}
